@@ -8,13 +8,13 @@ A multimodal machine learning framework for predicting **IVF embryo implantation
 
 Embryo implantation prediction is one of the most critical challenges in **In Vitro Fertilization (IVF)**. Conventional embryo selection relies heavily on manual morphological assessment, which is subjective and varies among embryologists.
 
-This project introduces a multimodal machine learning pipeline that combines:
+This project presents a multimodal machine learning pipeline that integrates:
 
 - 🖼️ Blastocyst microscopy image analysis
-- 📊 Clinical IVF data
-- 🤖 Machine learning-based prediction
+- 📊 Clinical IVF patient data
+- 🤖 Machine learning-based implantation prediction
 
-The system extracts handcrafted texture features from embryo images using **Gray-Level Co-occurrence Matrix (GLCM)** and combines them with structured clinical features to improve implantation outcome prediction.
+The framework extracts handcrafted texture features from embryo images using the **Gray-Level Co-occurrence Matrix (GLCM)** and combines them with structured clinical features to improve implantation outcome prediction.
 
 ---
 
@@ -34,7 +34,7 @@ The system extracts handcrafted texture features from embryo images using **Gray
 
 The complete workflow consists of the following stages:
 
-```
+```text
 Blastocyst Images
         │
         ▼
@@ -84,14 +84,14 @@ The project utilizes two complementary datasets.
 ## Blastocyst Image Dataset
 
 - **2,056 blastocyst microscopy images**
-- Binary classes:
+- Binary implantation outcome classes:
   - Pregnant
   - Non-Pregnant
 
 ### Final Fused Dataset
 
 | Property | Value |
-|----------|------:|
+|-----------|------:|
 | Total Samples | 2,056 |
 | Clinical Features | 36 |
 | Image Features | 6 |
@@ -101,19 +101,19 @@ The project utilizes two complementary datasets.
 
 # 🖼️ Image Preprocessing
 
-Each blastocyst image undergoes the following preprocessing steps:
+Each blastocyst image undergoes the following preprocessing pipeline:
 
-- Convert to grayscale
+- Convert RGB image to grayscale
 - Resize to **224 × 224 pixels**
-- Contrast enhancement using **CLAHE (Contrast Limited Adaptive Histogram Equalization)**
+- Apply **CLAHE (Contrast Limited Adaptive Histogram Equalization)**
 
-CLAHE improves local contrast and enhances embryo texture visibility, enabling more robust texture feature extraction.
+CLAHE enhances local image contrast, improving visibility of embryo texture patterns before feature extraction.
 
 ---
 
 # 🔬 Texture Feature Extraction
 
-Texture information is extracted using the **Gray-Level Co-occurrence Matrix (GLCM)**.
+Texture descriptors are extracted using the **Gray-Level Co-occurrence Matrix (GLCM)**.
 
 The following Haralick texture features are computed:
 
@@ -124,18 +124,18 @@ The following Haralick texture features are computed:
 - Correlation
 - Angular Second Moment (ASM)
 
-These handcrafted descriptors provide interpretable morphological information while remaining computationally efficient.
+These handcrafted descriptors capture morphological characteristics of blastocysts while remaining computationally efficient and highly interpretable.
 
 ---
 
 # 📊 Clinical Data Preprocessing
 
-Clinical records are processed using:
+Clinical records undergo several preprocessing operations:
 
-- Mean value imputation
-- StandardScaler normalization
+- Missing value imputation using mean values
 - Feature cleaning
 - English column translation
+- StandardScaler normalization
 
 The processed clinical features are then merged with the extracted image features to create a unified multimodal feature representation.
 
@@ -143,9 +143,9 @@ The processed clinical features are then merged with the extracted image feature
 
 # 🔗 Feature Fusion
 
-The final feature representation consists of:
+The final feature vector consists of:
 
-```
+```text
 36 Clinical Features
         +
 6 GLCM Texture Features
@@ -153,23 +153,23 @@ The final feature representation consists of:
 42 Features
 ```
 
-This multimodal representation enables the model to learn relationships between embryo morphology and patient clinical characteristics.
+The fused representation enables the classifier to jointly learn relationships between embryo morphology and patient clinical characteristics.
 
 ---
 
 # ⚖️ Handling Class Imbalance
 
-IVF datasets naturally contain fewer successful implantation cases.
+Successful embryo implantation cases are naturally underrepresented.
 
-To improve model performance, **Synthetic Minority Oversampling Technique (SMOTE)** is applied exclusively to the training dataset, producing a balanced class distribution before model training.
+To improve predictive performance, **Synthetic Minority Oversampling Technique (SMOTE)** is applied **only to the training dataset**, ensuring balanced class distributions while preventing information leakage.
 
 ---
 
 # 🤖 Machine Learning Model
 
-The prediction model is based on **Extreme Gradient Boosting (XGBoost)**.
+Prediction is performed using an optimized **Extreme Gradient Boosting (XGBoost)** classifier.
 
-### Hyperparameters
+## Hyperparameters
 
 | Parameter | Value |
 |-----------|------:|
@@ -183,7 +183,7 @@ The prediction model is based on **Extreme Gradient Boosting (XGBoost)**.
 | reg_alpha | 1.0 |
 | reg_lambda | 2.0 |
 
-The classification threshold is optimized using the validation dataset to maximize predictive performance.
+The optimal classification threshold is determined using the validation dataset to maximize predictive performance.
 
 ---
 
@@ -198,7 +198,7 @@ The classification threshold is optimized using the validation dataset to maximi
 | F1-Score | **83.84%** |
 | ROC-AUC | **93.31%** |
 
-The proposed framework demonstrates excellent discrimination capability while maintaining high precision and specificity.
+The proposed multimodal framework demonstrates strong discrimination capability while maintaining excellent precision and specificity.
 
 ---
 
@@ -226,43 +226,15 @@ The proposed framework demonstrates excellent discrimination capability while ma
 
 ---
 
-# 📁 Project Structure
-
-```
-├── data/
-│   ├── clinical_data/
-│   └── blastocyst_images/
-│
-├── notebooks/
-│
-├── src/
-│   ├── preprocessing.py
-│   ├── feature_extraction.py
-│   ├── feature_fusion.py
-│   ├── train.py
-│   └── predict.py
-│
-├── models/
-│   └── final_ivf_xgboost_model.joblib
-│
-├── results/
-│
-├── requirements.txt
-│
-└── README.md
-```
-
----
-
 # 🚀 Future Work
 
-- Integrate CNN-based feature extraction for blastocyst images.
-- Investigate Vision Transformer (ViT) architectures for embryo assessment.
-- Incorporate Explainable AI techniques such as SHAP.
+- Integrate deep CNN-based feature extraction.
+- Investigate Vision Transformer (ViT) architectures.
+- Apply Explainable AI methods such as SHAP.
 - Extend the framework to time-lapse embryo sequence analysis.
-- Accelerate inference using FPGA (PYNQ-Z2).
+- Deploy accelerated inference on FPGA (PYNQ-Z2).
 - Develop a real-time clinical decision support system.
-- Validate the framework on larger multi-center IVF datasets.
+- Validate on larger multi-center IVF datasets.
 - Explore federated learning for privacy-preserving collaborative training.
 
 ---
@@ -272,9 +244,11 @@ The proposed framework demonstrates excellent discrimination capability while ma
 - ✅ Multimodal fusion of clinical and blastocyst image features
 - ✅ CLAHE-based image enhancement
 - ✅ GLCM texture feature extraction
+- ✅ Clinical data preprocessing and normalization
 - ✅ SMOTE-based class balancing
 - ✅ Optimized XGBoost classifier
-- ✅ Decision threshold optimization
+- ✅ Threshold optimization
+- ✅ High-performance implantation prediction
 - ✅ Deployment-ready inference pipeline
 
 ---
@@ -287,4 +261,7 @@ The proposed framework demonstrates excellent discrimination capability while ma
 - **Sireesha T S**
 
 **Department of Electronics and Communication Engineering**  
-**BMS Institute of Technology and Management, Bengaluru**
+**BMS Institute of Technology and Management**  
+**Bengaluru, Karnataka, India**
+
+---
