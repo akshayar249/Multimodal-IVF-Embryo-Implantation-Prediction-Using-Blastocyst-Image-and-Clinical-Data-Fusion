@@ -1,267 +1,148 @@
-# 🧬 Multimodal IVF Embryo Implantation Prediction Using Blastocyst Image Processing and Clinical Data Fusion
+# Real-Time IVF Success Prediction Using FPGA-Enabled Machine Learning
 
-A multimodal machine learning framework for predicting **IVF embryo implantation success** by integrating **blastocyst image texture features** with **clinical IVF parameters**. The proposed system combines image processing, feature engineering, data fusion, and an optimized XGBoost classifier to provide accurate and interpretable implantation outcome prediction.
+A machine learning and FPGA-based system for **IVF outcome prediction using clinical features and real-time hardware inference**.
 
----
+The project uses an **XGBoost Gradient Boosted Decision Tree (GBDT)** model trained on IVF clinical data and implements the trained decision trees on a **Digilent Nexys A7-100T FPGA** using fixed-point arithmetic and UART communication.
 
-## 📌 Overview
+## Key Features
 
-Embryo implantation prediction is one of the most critical challenges in **In Vitro Fertilization (IVF)**. Conventional embryo selection relies heavily on manual morphological assessment, which is subjective and varies among embryologists.
+* IVF outcome prediction using clinical and treatment-related features
+* Feature selection from an initial set of 35 features
+* Lightweight XGBoost-based GBDT model
+* Patient-grouped Stratified K-Fold validation
+* 25-tree FPGA inference architecture
+* Fixed-point feature and leaf-value representation
+* UART-based feature input and prediction output
+* Real-time inference on Nexys A7
 
-This project presents a multimodal machine learning pipeline that integrates:
+## Dataset & Preprocessing
 
-- 🖼️ Blastocyst microscopy image analysis
-- 📊 Clinical IVF patient data
-- 🤖 Machine learning-based implantation prediction
+* **2,542 IVF records**
+* **35 initial features**
+* Median imputation for missing values
+* Patient-level grouping to prevent data leakage
+* Top 8 features selected for the final model
 
-The framework extracts handcrafted texture features from embryo images using the **Gray-Level Co-occurrence Matrix (GLCM)** and combines them with structured clinical features to improve implantation outcome prediction.
-
----
-
-## 🎯 Objectives
-
-- Develop a multimodal framework for IVF implantation prediction.
-- Enhance blastocyst images using CLAHE.
-- Extract discriminative texture features using GLCM.
-- Integrate image-derived and clinical features.
-- Handle class imbalance using SMOTE.
-- Train and optimize an XGBoost classifier.
-- Create a deployment-ready prediction pipeline for future FPGA implementation.
-
----
-
-# 🏗️ Methodology
-
-The complete workflow consists of the following stages:
+### Selected Features
 
 ```text
-Blastocyst Images
-        │
-        ▼
-Image Preprocessing (CLAHE)
-        │
-        ▼
-GLCM Texture Feature Extraction
-        │
-        ├────────────────────┐
-        │                    │
-        ▼                    ▼
-Clinical IVF Data      Image Features
-        │                    │
-        └──────────┬─────────┘
-                   ▼
-           Feature Fusion
-                   ▼
- Train / Validation / Test Split
-                   ▼
-           Feature Selection
-                   ▼
-               SMOTE
-                   ▼
-          StandardScaler
-                   ▼
-         Optimized XGBoost
-                   ▼
-     Threshold Optimization
-                   ▼
-      Implantation Prediction
+glucose
+m_proc_IM
+n_frozen
+P
+m_proc_density
+age
+m_proc_method
+m_proc_NP
 ```
 
----
+## Machine Learning
 
-# 📂 Dataset
+The final prediction model uses **XGBoost** for binary IVF outcome classification.
 
-The project utilizes two complementary datasets.
+| Parameter        |             Value |
+| ---------------- | ----------------: |
+| Trees            |                25 |
+| Maximum Depth    |                 4 |
+| Learning Rate    |              0.05 |
+| Objective        | `binary:logistic` |
+| Scale Pos Weight |              1.63 |
 
-## Clinical Dataset
+### Validation
 
-- **2,542 IVF clinical records**
-- **36 clinical features**
-- Female hormonal profile
-- Male semen analysis
-- Treatment cycle information
+**Stratified Group K-Fold Cross-Validation**
 
-## Blastocyst Image Dataset
+* 5 folds
+* 20 repetitions
+* Patient-level grouping
+* Metrics: Accuracy, ROC-AUC, PR-AUC, Precision, Recall, F1-score and Specificity
 
-- **2,056 blastocyst microscopy images**
-- Binary implantation outcome classes:
-  - Pregnant
-  - Non-Pregnant
+### Results
 
-### Final Fused Dataset
+| Metric               |  Score |
+| -------------------- | -----: |
+| Accuracy             | 89.78% |
+| ROC-AUC              | 95.55% |
+| Precision            |    86% |
+| Recall / Sensitivity |    88% |
+| F1-Score             |    87% |
+| Specificity          |    91% |
 
-| Property | Value |
-|-----------|------:|
-| Total Samples | 2,056 |
-| Clinical Features | 36 |
-| Image Features | 6 |
-| Total Features | 42 |
+## FPGA Implementation
 
----
-
-# 🖼️ Image Preprocessing
-
-Each blastocyst image undergoes the following preprocessing pipeline:
-
-- Convert RGB image to grayscale
-- Resize to **224 × 224 pixels**
-- Apply **CLAHE (Contrast Limited Adaptive Histogram Equalization)**
-
-CLAHE enhances local image contrast, improving visibility of embryo texture patterns before feature extraction.
-
----
-
-# 🔬 Texture Feature Extraction
-
-Texture descriptors are extracted using the **Gray-Level Co-occurrence Matrix (GLCM)**.
-
-The following Haralick texture features are computed:
-
-- Contrast
-- Dissimilarity
-- Homogeneity
-- Energy
-- Correlation
-- Angular Second Moment (ASM)
-
-These handcrafted descriptors capture morphological characteristics of blastocysts while remaining computationally efficient and highly interpretable.
-
----
-
-# 📊 Clinical Data Preprocessing
-
-Clinical records undergo several preprocessing operations:
-
-- Missing value imputation using mean values
-- Feature cleaning
-- English column translation
-- StandardScaler normalization
-
-The processed clinical features are then merged with the extracted image features to create a unified multimodal feature representation.
-
----
-
-# 🔗 Feature Fusion
-
-The final feature vector consists of:
+The trained XGBoost model is converted into a hardware-friendly **GBDT inference engine**.
 
 ```text
-36 Clinical Features
-        +
-6 GLCM Texture Features
-        =
-42 Features
+Host PC
+   ↓
+UART Receiver
+   ↓
+8 × 16-bit Feature Registers
+   ↓
+GBDT Inference Engine
+   ↓
+25 Decision Trees
+   ↓
+Tree Traversal
+   ↓
+Score Aggregation
+   ↓
+P / NP Prediction
+   ↓
+UART Output
 ```
 
-The fused representation enables the classifier to jointly learn relationships between embryo morphology and patient clinical characteristics.
+### Fixed-Point Representation
 
----
+Input features are encoded as signed 16-bit values with a scale factor of 100:
 
-# ⚖️ Handling Class Imbalance
+```text
+12.00 → 1200
+5.00  → 500
+0.50  → 50
+38.00 → 3800
+```
 
-Successful embryo implantation cases are naturally underrepresented.
+Tree leaf values are represented using **signed Q16.16 fixed-point arithmetic**.
 
-To improve predictive performance, **Synthetic Minority Oversampling Technique (SMOTE)** is applied **only to the training dataset**, ensuring balanced class distributions while preventing information leakage.
+The outputs of all 25 trees are accumulated to obtain the final prediction margin.
 
----
+```text
+Margin ≥ 0 → P
+Margin < 0 → NP
+```
 
-# 🤖 Machine Learning Model
+## UART Communication
 
-Prediction is performed using an optimized **Extreme Gradient Boosting (XGBoost)** classifier.
+* Baud rate: **115200**
+* Data: **8-bit**
+* Parity: **None**
+* Stop bits: **1**
+* Input: 8 features × 16 bits
+* Total input packet: **16 bytes**
 
-## Hyperparameters
+The UART receiver uses:
 
-| Parameter | Value |
-|-----------|------:|
-| n_estimators | 400 |
-| learning_rate | 0.03 |
-| max_depth | 4 |
-| min_child_weight | 3 |
-| subsample | 0.85 |
-| colsample_bytree | 0.80 |
-| gamma | 0.20 |
-| reg_alpha | 1.0 |
-| reg_lambda | 2.0 |
+```text
+IDLE → START → DATA → STOP
+```
 
-The optimal classification threshold is determined using the validation dataset to maximize predictive performance.
+At the Nexys A7's 100 MHz clock, the receiver uses approximately **868 clock cycles per UART bit** with midpoint sampling.
 
----
+## Hardware Integration
 
-# 📈 Results
+**Target:** Digilent Nexys A7-100T
 
-| Metric | Test Performance |
-|---------|----------------:|
-| Accuracy | **88.03%** |
-| Precision | **89.72%** |
-| Recall | **78.69%** |
-| Specificity | **94.12%** |
-| F1-Score | **83.84%** |
-| ROC-AUC | **93.31%** |
+The hardware implementation integrates:
 
-The proposed multimodal framework demonstrates strong discrimination capability while maintaining excellent precision and specificity.
+* UART communication
+* Feature buffering
+* 25-tree GBDT inference
+* Decision-tree traversal
+* Score aggregation
+* Fixed-point arithmetic
+* P/NP prediction output
 
----
+## Technologies
 
-# 📊 Confusion Matrix
-
-| Actual / Predicted | Non-Pregnant | Pregnant |
-|--------------------|-------------:|---------:|
-| Non-Pregnant | 176 | 11 |
-| Pregnant | 26 | 96 |
-
----
-
-# 🛠️ Technologies Used
-
-- Python
-- Pandas
-- NumPy
-- OpenCV
-- Scikit-image
-- Scikit-learn
-- XGBoost
-- Imbalanced-learn (SMOTE)
-- Matplotlib
-- Joblib
-
----
-
-# 🚀 Future Work
-
-- Integrate deep CNN-based feature extraction.
-- Investigate Vision Transformer (ViT) architectures.
-- Apply Explainable AI methods such as SHAP.
-- Extend the framework to time-lapse embryo sequence analysis.
-- Deploy accelerated inference on FPGA (PYNQ-Z2).
-- Develop a real-time clinical decision support system.
-- Validate on larger multi-center IVF datasets.
-- Explore federated learning for privacy-preserving collaborative training.
-
----
-
-# 🌟 Key Features
-
-- ✅ Multimodal fusion of clinical and blastocyst image features
-- ✅ CLAHE-based image enhancement
-- ✅ GLCM texture feature extraction
-- ✅ Clinical data preprocessing and normalization
-- ✅ SMOTE-based class balancing
-- ✅ Optimized XGBoost classifier
-- ✅ Threshold optimization
-- ✅ High-performance implantation prediction
-- ✅ Deployment-ready inference pipeline
-
----
-
-# 👨‍💻 Authors
-
-- **Akshaya Ramesh**
-- **Vibha I S**
-- **Ashitha M**
-- **Sireesha T S**
-
-**Department of Electronics and Communication Engineering**  
-**BMS Institute of Technology and Management**  
-**Bengaluru, Karnataka, India**
-
----
+**Python · Pandas · NumPy · Scikit-learn · XGBoost · Verilog · Vivado · UART · Fixed-Point Arithmetic · Nexys A7 FPGA**
