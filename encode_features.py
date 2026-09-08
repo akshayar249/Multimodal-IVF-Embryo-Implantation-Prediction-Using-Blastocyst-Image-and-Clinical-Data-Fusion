@@ -1,19 +1,4 @@
-"""
-Encode the 8 clinical features for the FPGA UART packet.
 
-Feature order MUST be:
-0 glucose
-1 m_proc_IM
-2 n_frozen
-3 P
-4 m_proc_density
-5 age
-6 m_proc_method
-7 m_proc_NP
-
-Feature encoding is signed 16-bit value*100.
-UART packet is 16 bytes, high byte first for each feature.
-"""
 import struct
 
 FEATURES = [
