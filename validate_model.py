@@ -1,13 +1,4 @@
-"""
-Reference checker for the saved XGBoost model.
 
-This checks the same tree structure used by the Verilog converter.
-It uses feature*100 for branch comparisons and Q16.16 for tree scores.
-
-The FPGA implementation is intended to reproduce the P/NP decision.
-To validate on real data, install xgboost and provide an input CSV/XLSX
-with the same 8 feature columns used by the training script.
-"""
 import json, math, sys
 import numpy as np
 
